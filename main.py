@@ -3,57 +3,64 @@ from pydantic import BaseModel
 from typing import List
 
 app = FastAPI()
-class student(BaseModel):
-    name: str
-    email: str
-    age: int
-    roll_number: str
-    department: str
 
-class studentResponse(BaseModel):
-    id: int
+students = []
+class Student(BaseModel):
     name: str
     email: str
     age: int
-    roll_number: str
-    department: str
+    Roll_number:str
+    Department:str
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-def create_student_logic(student: student):
+class StudentResponse(Student):
+    id: int
+   
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+def create_student(student:Student)->StudentResponse:
+    students.append(student)
     return student
 
-def read_student_logic(id: int):
-    # This is a placeholder logic, normally you'd fetch from DB
-    return {"id": id, "name": "placeholder", "email": "placeholder", "age": 0, "roll_number": "0", "department": "placeholder"}
+def get_student_by_roll(roll):
+    for student in students:
+        if student.Roll_number == roll:
+            return student
 
-def update_student_logic(id: int, student: student):
-    return studentResponse(id=id, **student.dict())
 
-def delete_student_logic(id: int):
-    return {"id": id, "message": "deleted"}
+def read_student(roll:str)->StudentResponse:
+    return get_student_by_roll(roll)
+
+
+def update_student(id:int,student:Student)->StudentResponse:
+    return StudentResponse(id=id, **student.dict())
+
+def delete_student(id:int):
+    return StudentResponse(id=id, **student.dict())
+
+@app.get("/students")
+def read_students():
+    return students
 
 @app.post("/students")
-def create_student_endpoint(student: student):
-    return create_student_logic(student)
+def create_student_api(student:Student):
+    return create_student(student)
 
-@app.get("/students/{id}")
-def read_student_endpoint(id: int):
-    return read_student_logic(id)
+@app.get("/students/{roll}")
+def read_student_api(roll:str):
+    return read_student(roll)
 
-@app.put("/students/{id}")
-def update_student_endpoint(id: int, student: student):
-    return update_student_logic(id, student)
+@app.put("/students/{roll}")
+def update_student_api(roll:str,student:Student):
+    return update_student(roll,student)
 
-@app.delete("/students/{id}")
-def delete_student_endpoint(id: int):
-    return delete_student_logic(id)
-
-
-
-
-
-
-
+@app.delete("/students/{roll}")
+def delete_student_api(roll:str):
+    return delete_student(roll)
